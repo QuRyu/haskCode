@@ -1,4 +1,4 @@
-name:                pcap
+name:                pcapp
 version:             0.1.0.0
 github:              "githubuser/pcap"
 license:             BSD3
@@ -22,6 +22,8 @@ description:         Please see the README on Github at <https://github.com/gith
 dependencies:
 - base >= 4.7 && < 5
 - binary
+- pcap
+- bytestring
 
 library:
   source-dirs: src
@@ -35,7 +37,7 @@ executables:
     - -rtsopts
     - -with-rtsopts=-N
     dependencies:
-    - pcap
+    - pcapp
 
 tests:
   pcap-test:
@@ -46,4 +48,4 @@ tests:
     - -rtsopts
     - -with-rtsopts=-N
     dependencies:
-    - pcap
+    - pcapp
