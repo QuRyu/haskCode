@@ -24,6 +24,7 @@ dependencies:
 - binary
 - pcap
 - bytestring
+- text
 
 library:
   source-dirs: src
