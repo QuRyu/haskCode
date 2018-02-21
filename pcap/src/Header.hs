@@ -5,6 +5,7 @@ module Header (
 
 import Data.Int 
 import Data.Word 
+import Control.Monad
 
 import qualified Data.ByteString as BS 
 import qualified Data.ByteString.Char8 as Char8
@@ -35,9 +36,9 @@ data Transaction = Trans {
     , price :: BS.ByteString
     } deriving (Show, Eq)
 
-data MarketData = MD { 
+data MarketData = B6034 { 
       quote   :: BS.ByteString
-    , issTIme :: BS.ByteString -- issue time 
+    , issCode :: BS.ByteString -- issue code (ISIN code) 
     , accTime :: BS.ByteString -- accepted time 
     , bids    :: [Transaction] 
     , asks    :: [Transaction]
@@ -48,6 +49,9 @@ data PPacket = PPacket PPacketHeader MarketData
 
 data Pcap = Pcap PGlobalHeader [PPacket] 
     deriving Show
+
+packetLen :: Word32 
+packetLen = 42 
       
 parseGHeader :: Get PGlobalHeader 
 parseGHeader = PGHeader <$> 
@@ -67,6 +71,31 @@ parsePHeader = PPHeader <$>
                getWord32le <*>
                getWord32le 
 
+parsePPacket :: (BS.ByteString -> Bool) -> -- discard the packet?
+                (BS.ByteString -> Get a) -> -- packet parser 
+                Get (Maybe a) 
+parsePPacket f p = do 
+    skip' 12
+    plen <- getWord32le -- length of pcap packet 
+    skip 42 -- skip the IP/UDP header 
+    result <- lookAheadM try
+    case result of 
+        Nothing -> do skip' (plen - packetLen)
+                      return Nothing 
+        Just _ -> do content <- getByteString' (plen - packetLen - 5)
+                     parsed <- p content 
+                     return (Just parsed)
+
+  where 
+    skip' = skip . fromIntegral 
+    getByteString' = getByteString . fromIntegral
+    try = do discard <- getByteString 5 
+             if f discard 
+               then return (Just ())
+               else return Nothing 
+
+
+
 parseMarketData :: Get MarketData 
 parseMarketData = do quote <- getByteString 5 
                      issTime <- getByteString 12 
@@ -77,7 +106,7 @@ parseMarketData = do quote <- getByteString 5
                      skip 50 
                      accTime <- getByteString 8
                      skip 1 
-                     return (MD quote issTime accTime bids asks)
+                     return (B6034 quote issTime accTime bids asks)
     where 
       go 0 = return [] 
       go n = do price <- getByteString 5  
@@ -86,20 +115,3 @@ parseMarketData = do quote <- getByteString 5
                 return $ (Trans qty price) : remains 
 
 
-parsePPacket :: Get PPacket 
-parsePPacket = PPacket 
-            <$> parsePHeader 
-            <*> parseMarketData 
-
-parsePCAP :: Get Pcap 
-parsePCAP = do 
-    gHeader <- parseGHeader
-    packets <- parsePackets 
-    return (Pcap gHeader packets)
-  where 
-    parsePackets :: Get [PPacket]
-    parsePackets = do 
-        empty <-isEmpty 
-        if empty 
-            then return [] 
-            else (:) <$> parsePPacket <*> parsePackets 
