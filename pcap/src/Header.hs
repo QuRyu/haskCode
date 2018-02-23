@@ -77,10 +77,10 @@ parsePPacket f p = do
 
 
 parseB6034 :: Get (Maybe MarketData)
-parseB6034 = parsePPacket (== quote) parseB6034' 
+parseB6034 = parsePPacket (BS.isPrefixOf quote) parseB6034' 
     where 
       quote :: BS.ByteString
-      quote = Char8.pack "B6043"
+      quote = Char8.pack "B6034"
 
       parseB6034' :: Get MarketData 
       parseB6034' = do
