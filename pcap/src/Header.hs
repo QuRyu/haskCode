@@ -11,11 +11,14 @@ import Data.Int
 import Data.Word 
 import Control.Monad
 import Data.Maybe 
+import Control.Monad.IO.Class
 
 import qualified Data.ByteString as BS 
 import qualified Data.ByteString.Lazy as BL
 import qualified Data.ByteString.Char8 as Char8
 import Data.Binary.Get 
+import Data.Text (Text)
+import Data.Text.Encoding 
 
 import Lib (source)
 
@@ -30,13 +33,13 @@ data PGlobalHeader = PGHeader {
     } deriving (Show, Eq)
 
 data Transaction = Trans { 
-      qty   :: BS.ByteString 
-    , price :: BS.ByteString
+      qty   :: Text
+    , price :: Text
     } deriving (Show, Eq)
 
 data MarketData = B6034 {
-      issCode :: BS.ByteString -- issue code (ISIN code) 
-    , accTime :: BS.ByteString -- accepted time 
+      issCode :: Text -- issue code (ISIN code) 
+    , accTime :: Text -- accepted time 
     , bids    :: [Transaction] -- from 1st to 5th
     , asks    :: [Transaction]
     } deriving (Show, Eq)
@@ -84,24 +87,26 @@ parseB6034 = parsePPacket (BS.isPrefixOf quote) parseB6034'
 
       parseB6034' :: Get MarketData 
       parseB6034' = do
-          issCode <- getByteString 12 
+          issCode <- mkText 12 
           skip 12 
           bids <- go 5  
           skip 7
           asks <- go 5  
           skip 50 
-          accTime <- getByteString 8
+          accTime <- mkText 8
           skip 1 
           return (B6034 issCode accTime bids asks)
         where 
           go 0 = return [] 
-          go n = do price <- getByteString 5  
-                    qty <- getByteString 7
+          go n = do price <- mkText 5  
+                    qty <- mkText 7
                     remains <- go (n-1)  
                     return $ (Trans qty price) : remains 
 
+mkText :: Int -> Get Text 
+mkText = fmap decodeLatin1 . getByteString 
 
-parsePCAP :: Get Pcap 
+
 parsePCAP = do 
     gHeader <- parseGHeader 
     packets <- parsePPackets [] 
@@ -113,36 +118,10 @@ parsePCAP = do
         if empty 
             then return xs 
             else do p <- parseB6034 
-                    return (p:xs)
+                    parsePPackets (p:xs)
 
 
 firstPacket :: IO BL.ByteString 
 firstPacket = liftM (BL.take 273 . BL.drop 270 . BL.drop 24) source 
 
-
-tryFirstItem = do 
-    code <- getByteString 5
-    iss <- getByteString 12 
-    skip 12 
-    bids <- go 5 
-    skip 7
-    asks <- go 5 
-    skip 50 
-    time <- getByteString 8
-    end <- getByteString 1 
-    readed <- bytesRead
-    return (code, iss, bids, asks, time, end, readed)
-    --hh <- getByteString 2 
-    --mm <- getByteString 2 
-    --ss <- getByteString 2 
-    --uu <- getByteString 2 
-    --f <- getByteString 1 
-    -- return (iss, bids, asks, readed, hh, mm, ss, uu, f)
-
-  where 
-    go 0 = return [] 
-    go n = do price <- getByteString 5 
-              qty <- getByteString 7 
-              remains <- go (n-1)
-              return $ (Trans qty price) : remains 
 
