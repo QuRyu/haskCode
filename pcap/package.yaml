@@ -2,9 +2,9 @@ name:                pcapp
 version:             0.1.0.0
 github:              "githubuser/pcap"
 license:             BSD3
-author:              "Author name here"
-maintainer:          "example@example.com"
-copyright:           "2018 Author name here"
+author:              "Qingbo Liu"
+maintainer:          "Quentin.Liu.0415@gmail.com"
+copyright:           "2018 Qingbo Liu"
 
 extra-source-files:
 - README.md
