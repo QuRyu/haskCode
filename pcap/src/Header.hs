@@ -12,6 +12,7 @@ import Data.Word
 import Control.Monad
 import Data.Maybe 
 import Control.Monad.IO.Class
+import Debug.Trace
 
 import qualified Data.ByteString as BS 
 import qualified Data.ByteString.Lazy as BL
@@ -47,6 +48,9 @@ data MarketData = B6034 {
 data Pcap = Pcap PGlobalHeader [MarketData] 
     deriving Show
 
+getMarketData :: Pcap -> [MarketData]
+getMarketData (Pcap _ ms) = ms 
+
 packetLen :: Word32 
 packetLen = 42 
       
@@ -67,13 +71,17 @@ parsePPacket :: (BS.ByteString -> Bool) -> -- discard the packet?
 parsePPacket f p = do 
     skip 12
     plen <- getWord32le -- length of pcap packet 
-    skip 42 -- skip the IP/UDP header 
-    code <- getByteString 5 
-    if f code 
-        then do r <- p 
-                return (Just r)
-        else do skip' (plen - 47)
+    if plen < 47
+        then do skip' plen 
                 return Nothing 
+        else do skip 42 -- skip the IP/UDP header 
+                code <- getByteString 5 
+                if f code 
+                    then do r <- p 
+                            return (Just r)
+                    else do let skipLen = abs (plen - 47)
+                            skip' skipLen
+                            return Nothing 
   where 
     skip' = skip . fromIntegral 
     getByteString' = getByteString . fromIntegral
@@ -107,6 +115,7 @@ mkText :: Int -> Get Text
 mkText = fmap decodeLatin1 . getByteString 
 
 
+parsePCAP :: Get Pcap
 parsePCAP = do 
     gHeader <- parseGHeader 
     packets <- parsePPackets [] 
