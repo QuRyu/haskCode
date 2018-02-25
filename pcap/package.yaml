@@ -25,6 +25,7 @@ dependencies:
 - pcap
 - bytestring
 - text
+- time 
 
 library:
   source-dirs: src
