@@ -1,10 +1,12 @@
-module Header (
-      PGlobalHeader(..)
-    , Transaction(..)
-    , MarketData(..)
-    , Pcap(..)
+module PcapParser (
+      PGlobalHeader
+    , Transaction
+    , MarketData
+    , Pcap
     
     , parsePCAP 
+    , getMarketData
+    , accTime 
     ) where 
 
 import Data.Int 
@@ -21,7 +23,7 @@ import Data.Binary.Get
 import Data.Text (Text)
 import Data.Text.Encoding 
 
-import Lib (source)
+import Time 
 
 data PGlobalHeader = PGHeader { 
       magic_number  :: Word32 
@@ -33,23 +35,40 @@ data PGlobalHeader = PGHeader {
     , network       :: Word32 -- data link type 
     } deriving (Show, Eq)
 
+data PPacket = PPacket BS.ByteString MarketData 
+
 data Transaction = Trans { 
-      qty   :: Text
-    , price :: Text
-    } deriving (Show, Eq)
+      qty   :: BS.ByteString 
+    , price :: BS.ByteString 
+    } deriving Eq
 
 data MarketData = B6034 {
-      issCode :: Text -- issue code (ISIN code) 
-    , accTime :: Text -- accepted time 
+      issCode :: BS.ByteString -- issue code (ISIN code) 
+    , accTime :: Time  -- accepted time 
     , bids    :: [Transaction] -- from 1st to 5th
     , asks    :: [Transaction]
-    } deriving (Show, Eq)
+    } deriving Eq
 
 data Pcap = Pcap PGlobalHeader [MarketData] 
     deriving Show
 
+instance Show PPacket where 
+    show (PPacket a m) = show a ++ ' ' : show m 
+
+instance Show Transaction where 
+    show (Trans q p) = show q ++ '@' : show p 
+
+instance Show MarketData where 
+    show (B6034 i t b a) = 
+         show t ++ ' ' : show i ++ ' ' : go (reverse b) ++ ' ' : go a 
+        where 
+          go [] = ""
+          go (x:xs) = show x ++ ' ' : go xs 
+
+
 getMarketData :: Pcap -> [MarketData]
 getMarketData (Pcap _ ms) = ms 
+
 
 packetLen :: Word32 
 packetLen = 42 
@@ -95,24 +114,25 @@ parseB6034 = parsePPacket (BS.isPrefixOf quote) parseB6034'
 
       parseB6034' :: Get MarketData 
       parseB6034' = do
-          issCode <- mkText 12 
+          issCode <- getByteString 12 
           skip 12 
           bids <- go 5  
           skip 7
           asks <- go 5  
           skip 50 
-          accTime <- mkText 8
+          accTime <- getTime 
           skip 1 
           return (B6034 issCode accTime bids asks)
         where 
+          getTime = mkTime 
+                 <$> getWord8 
+                 <*> getWord8 
+                 <*> getWord8
           go 0 = return [] 
-          go n = do price <- mkText 5  
-                    qty <- mkText 7
+          go n = do price <- getByteString 5  
+                    qty <- getByteString 7
                     remains <- go (n-1)  
                     return $ (Trans qty price) : remains 
-
-mkText :: Int -> Get Text 
-mkText = fmap decodeLatin1 . getByteString 
 
 
 parsePCAP :: Get Pcap
@@ -130,7 +150,5 @@ parsePCAP = do
                     parsePPackets (p:xs)
 
 
-firstPacket :: IO BL.ByteString 
-firstPacket = liftM (BL.take 273 . BL.drop 270 . BL.drop 24) source 
 
 
