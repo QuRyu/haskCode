@@ -14,7 +14,6 @@ import Data.Word
 import Control.Monad
 import Data.Maybe 
 import Control.Monad.IO.Class
-import Debug.Trace
 
 import qualified Data.ByteString as BS 
 import qualified Data.ByteString.Lazy as BL
@@ -43,7 +42,8 @@ data Transaction = Trans {
     } deriving Eq
 
 data MarketData = B6034 {
-      issCode :: BS.ByteString -- issue code (ISIN code) 
+      paccTime :: Word32 -- packet accpet time 
+    , issCode :: BS.ByteString -- issue code (ISIN code) 
     , accTime :: Time  -- accepted time 
     , bids    :: [Transaction] -- from 1st to 5th
     , asks    :: [Transaction]
@@ -59,12 +59,14 @@ instance Show Transaction where
     show (Trans q p) = show q ++ '@' : show p 
 
 instance Show MarketData where 
-    show (B6034 i t b a) = 
-         show t ++ ' ' : show i ++ ' ' : go (reverse b) ++ ' ' : go a 
+    show (B6034 p i t b a) = 
+         show p ++ ' ' : show t ++ ' ' : show i ++ ' ' : go (reverse b) ++ ' ' : go a 
         where 
           go [] = ""
           go (x:xs) = show x ++ ' ' : go xs 
 
+instance Ord MarketData where 
+    compare (B6034 _ _ l _ _) (B6034 _ _ r _ _) = compare l r 
 
 getMarketData :: Pcap -> [MarketData]
 getMarketData (Pcap _ ms) = ms 
@@ -85,10 +87,11 @@ parseGHeader = PGHeader <$>
 
 
 parsePPacket :: (BS.ByteString -> Bool) -> -- discard the packet?
-                Get a -> -- packet parser 
+                (Word32 -> Get a) -> -- packet parser 
                 Get (Maybe a) 
 parsePPacket f p = do 
-    skip 12
+    pacc <- getWord32le 
+    skip 8 
     plen <- getWord32le -- length of pcap packet 
     if plen < 47
         then do skip' plen 
@@ -96,7 +99,7 @@ parsePPacket f p = do
         else do skip 42 -- skip the IP/UDP header 
                 code <- getByteString 5 
                 if f code 
-                    then do r <- p 
+                    then do r <- p pacc 
                             return (Just r)
                     else do let skipLen = abs (plen - 47)
                             skip' skipLen
@@ -112,22 +115,24 @@ parseB6034 = parsePPacket (BS.isPrefixOf quote) parseB6034'
       quote :: BS.ByteString
       quote = Char8.pack "B6034"
 
-      parseB6034' :: Get MarketData 
-      parseB6034' = do
-          issCode <- getByteString 12 
-          skip 12 
-          bids <- go 5  
-          skip 7
-          asks <- go 5  
-          skip 50 
-          accTime <- getTime 
-          skip 1 
-          return (B6034 issCode accTime bids asks)
+      parseB6034' :: Word32 -> Get MarketData 
+      parseB6034' pacc = do 
+        readB <- bytesRead 
+        issCode <- getByteString 12 
+        skip 12 
+        bids <- go 5  
+        skip 7
+        asks <- go 5  
+        skip 50 
+        accTime <- getTime 
+        skip 1 
+        return (B6034 pacc issCode accTime bids asks)
         where 
           getTime = mkTime 
-                 <$> getWord8 
-                 <*> getWord8 
-                 <*> getWord8
+                 <$> getWord16le
+                 <*> getWord16le 
+                 <*> getWord16le
+                 <*> getWord16le
           go 0 = return [] 
           go n = do price <- getByteString 5  
                     qty <- getByteString 7
