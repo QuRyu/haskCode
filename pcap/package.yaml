@@ -22,10 +22,8 @@ description:         Please see the README on Github at <https://github.com/gith
 dependencies:
 - base >= 4.7 && < 5
 - binary
-- pcap
 - bytestring
 - text
-- time 
 
 library:
   source-dirs: src
