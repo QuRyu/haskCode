@@ -10,13 +10,14 @@ module Time (
 import Data.Word 
 
 data Time = Time { 
-    hour    :: Word8
-  , minute  :: Word8
-  , second  :: Word8
+    hour    :: Word16
+  , minute  :: Word16
+  , second  :: Word16
+  , ms      :: Word16 
   } deriving (Eq, Ord)
 
 instance Show Time where 
-    show (Time h m s) = show h ++ ':' : show m ++ ':' : show s
+    show (Time h m s u) = show h ++ ':' : show m ++ ':' : show s ++ ':' : show u 
 
-mkTime :: Word8 -> Word8 -> Word8 -> Time 
+mkTime :: Word16 -> Word16 -> Word16 -> Word16 -> Time 
 mkTime = Time 
