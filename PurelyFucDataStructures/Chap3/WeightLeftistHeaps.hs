@@ -1,4 +1,4 @@
-module Chap3_Weight_LeftistHeaps where 
+module WeightLeftistHeaps where 
 
 data Heap a = Empty 
             | Node Int a (Heap a) (Heap a)
