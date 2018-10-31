@@ -1,6 +1,7 @@
+{-# LANGUAGE BangPatterns #-} 
+
 module PcapParser (
       PGlobalHeader
-    , Transaction
     , MarketData
     , Pcap
     
@@ -25,28 +26,27 @@ import Data.Text.Encoding
 import Time 
 
 data PGlobalHeader = PGHeader { 
-      magic_number  :: Word32 
-    , version_major :: Word16 
-    , version_minor :: Word16 
-    , timezone      :: Int32  -- GMT to local correction 
-    , sigfigs       :: Word32 -- accuracy of timestamps 
-    , snaplen       :: Word32 -- max length of captured packets 
-    , network       :: Word32 -- data link type 
+      magic_number  :: {-# UNPACK #-} !Word32 
+    , version_major :: {-# UNPACK #-} !Word16 
+    , version_minor :: {-# UNPACK #-} !Word16 
+    , timezone      :: {-# UNPACK #-} !Int32  -- GMT to local correction 
+    , sigfigs       :: {-# UNPACK #-} !Word32 -- accuracy of timestamps 
+    , snaplen       :: {-# UNPACK #-} !Word32 -- max length of captured packets
+    , network       :: {-# UNPACK #-} !Word32 -- data link type 
     } deriving (Show, Eq)
 
 data PPacket = PPacket BS.ByteString MarketData 
 
-data Transaction = Trans { 
-      qty   :: BS.ByteString 
-    , price :: BS.ByteString 
-    } deriving Eq
+type Qty = BS.ByteString
+type Price = BS.ByteString
 
 data MarketData = B6034 {
-      paccTime :: Word32 -- packet accpet time 
-    , issCode :: BS.ByteString -- issue code (ISIN code) 
-    , accTime :: Time  -- accepted time 
-    , bids    :: [Transaction] -- from 1st to 5th
-    , asks    :: [Transaction]
+      paccTime :: {-# UNPACK #-} !Word32 -- packet accpet time 
+    , issCode :: {-# UNPACK #-} !BS.ByteString -- issue code (ISIN code) 
+    , accTime :: {-# UNPACK #-} !(Word16, Word16, Word16, Word16)  
+            -- accepted time, in format of (hour, minute, second, ms)
+    , bids    :: ![(Qty, Price)] -- from 1st to 5th
+    , asks    :: ![(Qty, Price)]
     } deriving Eq
 
 data Pcap = Pcap PGlobalHeader [MarketData] 
@@ -55,15 +55,17 @@ data Pcap = Pcap PGlobalHeader [MarketData]
 instance Show PPacket where 
     show (PPacket a m) = show a ++ ' ' : show m 
 
-instance Show Transaction where 
-    show (Trans q p) = show q ++ '@' : show p 
-
 instance Show MarketData where 
     show (B6034 p i t b a) = 
-         show p ++ ' ' : show t ++ ' ' : show i ++ ' ' : go (reverse b) ++ ' ' : go a 
+         show p ++ ' ' : showTime t ++ ' ' : show i ++ ' ' : go (reverse b) 
+         ++ ' ' : go a 
         where 
           go [] = ""
-          go (x:xs) = show x ++ ' ' : go xs 
+          go (x:xs) = showTrans x ++ ' ' : go xs 
+
+          showTrans (q, p) = show q ++ '@' : show p 
+          showTime (h, m, s, ms) = show h ++ ':' : show m ++ ':' : show s
+                                   ++ ':' : show ms 
 
 instance Ord MarketData where 
     compare (B6034 _ _ l _ _) (B6034 _ _ r _ _) = compare l r 
@@ -128,16 +130,17 @@ parseB6034 = parsePPacket (BS.isPrefixOf quote) parseB6034'
         skip 1 
         return (B6034 pacc issCode accTime bids asks)
         where 
-          getTime = mkTime 
+          getTime = (,,,) 
                  <$> getWord16le
                  <*> getWord16le 
                  <*> getWord16le
                  <*> getWord16le
           go 0 = return [] 
-          go n = do price <- getByteString 5  
-                    qty <- getByteString 7
-                    remains <- go (n-1)  
-                    return $ (Trans qty price) : remains 
+          go n = do !price <- getByteString 5  
+                    !qty <- getByteString 7
+                    !remains <- go (n-1)  
+                    let trans = (qty, price)
+                    return $ trans : remains 
 
 
 parsePCAP :: Get Pcap

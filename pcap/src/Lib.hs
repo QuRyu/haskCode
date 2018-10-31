@@ -1,6 +1,5 @@
 module Lib
     ( PGlobalHeader
-    , Transaction 
     , MarketData 
     , Pcap 
 
