@@ -5,6 +5,8 @@ license:             BSD3
 author:              "Qingbo Liu"
 maintainer:          "Quentin.Liu.0415@gmail.com"
 copyright:           "2018 Qingbo Liu"
+category:            "freeform"
+synopsis:            "a parser for offline network packages" 
 
 extra-source-files:
 - README.md
