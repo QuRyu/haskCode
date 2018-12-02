@@ -49,7 +49,7 @@ data MarketData = B6034 {
     , asks    :: ![(Qty, Price)]
     } deriving Eq
 
-data Pcap = Pcap PGlobalHeader [MarketData] 
+data Pcap = Pcap !PGlobalHeader ![MarketData] 
     deriving Show
 
 instance Show PPacket where 
