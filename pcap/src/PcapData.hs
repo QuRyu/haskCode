@@ -13,16 +13,20 @@ module PcapData (
 
     , marketDataBuilder
     , pcapBuilder
+    , sortPcap
 
     ) where 
 
 import Data.Int
 import Data.Word 
 import Data.Char (ord) 
+import Control.Monad.ST 
 
 import Data.ByteString (ByteString)
 import qualified Data.ByteString as BS 
 import Data.ByteString.Builder 
+import qualified Data.Vector as V 
+import qualified Data.Vector.Algorithms.Intro as V
 
 data MarketData = B6034 {
       paccTime :: {-# UNPACK #-} !Word32     -- packet accept time  
@@ -79,6 +83,7 @@ instance Ord MarketData where
     compare l r = compare (accTime l) (accTime r) 
 
 
+-- | Global header of the netwke packet 
 data PGlobalHeader = PGHeader { 
       magic_number  :: {-# UNPACK #-} !Word32 
     , version_major :: {-# UNPACK #-} !Word16 
@@ -89,25 +94,38 @@ data PGlobalHeader = PGHeader {
     , network       :: {-# UNPACK #-} !Word32 -- data link type 
     } deriving (Show, Eq)
 
-mkPGlobalHeader :: Word32 -> -- magic number 
-                   Word16 -> -- major version 
-                   Word16 -> -- minor version
-                   Int32 ->  -- timezone 
-                   Word32 -> -- accuracy of timestamps 
-                   Word32 -> -- max length of captured packets 
-                   Word32 -> -- network  
+mkPGlobalHeader :: Word32 -> -- | magic number 
+                   Word16 -> -- | major version 
+                   Word16 -> -- | minor version
+                   Int32 ->  -- | timezone 
+                   Word32 -> -- | accuracy of timestamps 
+                   Word32 -> -- | max length of captured packets 
+                   Word32 -> -- | network  
                    PGlobalHeader
 mkPGlobalHeader = PGHeader
 
 
-data Pcap = Pcap !PGlobalHeader ![MarketData] 
+data Pcap = Pcap !PGlobalHeader (V.Vector MarketData)
 
 mkPcap :: PGlobalHeader -> [MarketData] -> Pcap
-mkPcap = Pcap
+mkPcap header mdata = Pcap header (V.fromList mdata) 
 
 pcapBuilder :: Pcap -> Builder 
-pcapBuilder (Pcap _ mdata) = mconcat $ 
-                map (mappend (charUtf8 '\n') . marketDataBuilder) mdata 
+pcapBuilder (Pcap _ mdata) = builders (charUtf8 ' ') mdata
+ where builders = V.foldl' (\acc x -> 
+                               acc <> charUtf8 '\n' <> marketDataBuilder x)
+       (<>) = mappend
+
                                         
 
+sortPcap :: Pcap -> Pcap 
+sortPcap (Pcap header mdata) = 
+    Pcap header $ runST $ 
+             do v <- (V.thaw mdata) :: ST s (V.MVector s MarketData)
+                V.sort v 
+                sorted <- V.freeze v 
+                return sorted
+                             
+         
+ 
 
