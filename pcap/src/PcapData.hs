@@ -20,8 +20,6 @@ data MarketData = B6034 {
 mkMarketData :: Word32 -> ByteString -> MarketData 
 mkMarketData = B6034
 
-packStr = BS.pack . map (fromIntegral . ord) 
-
 -- (split i e bs) extracts the piece of bytestring that starts at position 
 -- i and has length e. The index starts at position 0. 
 split :: Int -> Int -> ByteString -> ByteString 
@@ -64,7 +62,31 @@ marketDataBuilder mdata  = word32LE (paccTime mdata) <> space
           at = charUtf8 '@' 
           mapBuild = mconcat . map (\(q, p) -> 
                            byteString q <> at <> byteString p <> space)
+
+instance Ord MarketData where 
+    compare l r = compare (accTime l) (accTime r) 
+
+
+data PGlobalHeader = PGHeader { 
+      magic_number  :: {-# UNPACK #-} !Word32 
+    , version_major :: {-# UNPACK #-} !Word16 
+    , version_minor :: {-# UNPACK #-} !Word16 
+    , timezone      :: {-# UNPACK #-} !Int32  -- GMT to local correction 
+    , sigfigs       :: {-# UNPACK #-} !Word32 -- accuracy of timestamps 
+    , snaplen       :: {-# UNPACK #-} !Word32 -- max length of captured packets
+    , network       :: {-# UNPACK #-} !Word32 -- data link type 
+    } deriving (Show, Eq)
+
+
+data Pcap = Pcap !PGlobalHeader ![MarketData] 
+    deriving Show
+
+
+pcapBuilder :: Pcap -> Builder 
+pcapBuilder (Pcap _ data) = mconcat $ 
+                map (mappend (charUtf8 '\n') . marketDataBuilder) data 
                                         
+
 
 
 

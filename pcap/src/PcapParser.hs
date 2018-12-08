@@ -25,50 +25,7 @@ import Data.Text.Encoding
 
 import Time 
 
-data PGlobalHeader = PGHeader { 
-      magic_number  :: {-# UNPACK #-} !Word32 
-    , version_major :: {-# UNPACK #-} !Word16 
-    , version_minor :: {-# UNPACK #-} !Word16 
-    , timezone      :: {-# UNPACK #-} !Int32  -- GMT to local correction 
-    , sigfigs       :: {-# UNPACK #-} !Word32 -- accuracy of timestamps 
-    , snaplen       :: {-# UNPACK #-} !Word32 -- max length of captured packets
-    , network       :: {-# UNPACK #-} !Word32 -- data link type 
-    } deriving (Show, Eq)
 
-data PPacket = PPacket BS.ByteString MarketData 
-
-type Qty = BS.ByteString
-type Price = BS.ByteString
-
-data MarketData = B6034 {
-      paccTime :: {-# UNPACK #-} !Word32 -- packet accpet time 
-    , issCode :: {-# UNPACK #-} !BS.ByteString -- issue code (ISIN code) 
-    , accTime :: {-# UNPACK #-} !(Word16, Word16, Word16, Word16)  
-            -- accepted time, in format of (hour, minute, second, ms)
-    , bids    :: ![(Qty, Price)] -- from 1st to 5th
-    , asks    :: ![(Qty, Price)]
-    } deriving Eq
-
-data Pcap = Pcap !PGlobalHeader ![MarketData] 
-    deriving Show
-
-instance Show PPacket where 
-    show (PPacket a m) = show a ++ ' ' : show m 
-
-instance Show MarketData where 
-    show (B6034 p i t b a) = 
-         show p ++ ' ' : showTime t ++ ' ' : show i ++ ' ' : go (reverse b) 
-         ++ ' ' : go a 
-        where 
-          go [] = ""
-          go (x:xs) = showTrans x ++ ' ' : go xs 
-
-          showTrans (q, p) = show q ++ '@' : show p 
-          showTime (h, m, s, ms) = show h ++ ':' : show m ++ ':' : show s
-                                   ++ ':' : show ms 
-
-instance Ord MarketData where 
-    compare (B6034 _ _ l _ _) (B6034 _ _ r _ _) = compare l r 
 
 getMarketData :: Pcap -> [MarketData]
 getMarketData (Pcap _ ms) = ms 
