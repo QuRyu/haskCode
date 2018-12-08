@@ -4,8 +4,6 @@ module Lib
     , Pcap 
 
     , parsePCAP
-    , getMarketData 
-    , accTime 
     , sortMarketData 
     ) where
 

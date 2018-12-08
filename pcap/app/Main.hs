@@ -1,6 +1,6 @@
 {-# LANGUAGE BangPatterns #-} 
 
-module Main where
+module Main (main) where
 
 import System.Environment 
 import Control.Monad 
@@ -18,9 +18,9 @@ main = do
     if null args' || length args' > 1 
         then putStrLn "Expecting pcap file path!"
         else do pcap <- readPcap args' 
-                let !mData = act ordering sortMarketData (getMarketData pcap)
-                return ()
+                --let !mData = act ordering sortMarketData (getMarketData pcap)
                 --forM_ mData print 
+                return ()
         
 
   where 

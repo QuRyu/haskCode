@@ -1,10 +1,22 @@
 {-# LANGUAGE ViewPatterns #-}
 
 module PcapData ( 
-      --PGlobalHeader
-    --, Pcap
+      MarketData
+    , PGlobalHeader
+    , Pcap
+
+
+    , mkMarketData
+    , mkPGlobalHeader
+    , mkPcap
+
+
+    , marketDataBuilder
+    , pcapBuilder
+
     ) where 
 
+import Data.Int
 import Data.Word 
 import Data.Char (ord) 
 
@@ -77,16 +89,25 @@ data PGlobalHeader = PGHeader {
     , network       :: {-# UNPACK #-} !Word32 -- data link type 
     } deriving (Show, Eq)
 
+mkPGlobalHeader :: Word32 -> -- magic number 
+                   Word16 -> -- major version 
+                   Word16 -> -- minor version
+                   Int32 ->  -- timezone 
+                   Word32 -> -- accuracy of timestamps 
+                   Word32 -> -- max length of captured packets 
+                   Word32 -> -- network  
+                   PGlobalHeader
+mkPGlobalHeader = PGHeader
+
 
 data Pcap = Pcap !PGlobalHeader ![MarketData] 
-    deriving Show
 
+mkPcap :: PGlobalHeader -> [MarketData] -> Pcap
+mkPcap = Pcap
 
 pcapBuilder :: Pcap -> Builder 
-pcapBuilder (Pcap _ data) = mconcat $ 
-                map (mappend (charUtf8 '\n') . marketDataBuilder) data 
+pcapBuilder (Pcap _ mdata) = mconcat $ 
+                map (mappend (charUtf8 '\n') . marketDataBuilder) mdata 
                                         
-
-
 
 

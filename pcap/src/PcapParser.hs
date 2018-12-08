@@ -6,8 +6,6 @@ module PcapParser (
     , Pcap
     
     , parsePCAP 
-    , getMarketData
-    , accTime 
     ) where 
 
 import Data.Int 
@@ -20,22 +18,14 @@ import qualified Data.ByteString as BS
 import qualified Data.ByteString.Lazy as BL
 import qualified Data.ByteString.Char8 as Char8
 import Data.Binary.Get 
-import Data.Text (Text)
-import Data.Text.Encoding 
 
-import Time 
-
-
-
-getMarketData :: Pcap -> [MarketData]
-getMarketData (Pcap _ ms) = ms 
-
+import PcapData 
 
 packetLen :: Word32 
 packetLen = 42 
       
 parseGHeader :: Get PGlobalHeader 
-parseGHeader = PGHeader <$> 
+parseGHeader = mkPGlobalHeader <$> 
                getWord32le <*> 
                getWord16le <*> 
                getWord16le <*>
@@ -77,35 +67,16 @@ parseB6034 = parsePPacket (BS.isPrefixOf quote) parseB6034'
       parseB6034' :: Word32 -> Get MarketData 
       parseB6034' pacc = do 
         readB <- bytesRead 
-        issCode <- getByteString 12 
-        skip 12 
-        bids <- go 5  
-        skip 7
-        asks <- go 5  
-        skip 50 
-        accTime <- getTime 
+        content <- getByteString 209 
         skip 1 
-        return (B6034 pacc issCode accTime bids asks)
-        where 
-          getTime = (,,,) 
-                 <$> getWord16le
-                 <*> getWord16le 
-                 <*> getWord16le
-                 <*> getWord16le
-          go 0 = return [] 
-          go n = do !price <- getByteString 5  
-                    !qty <- getByteString 7
-                    !remains <- go (n-1)  
-                    let trans = (qty, price)
-                    return $ trans : remains 
-
+        return (mkMarketData pacc content)
 
 parsePCAP :: Get Pcap
 parsePCAP = do 
     gHeader <- parseGHeader 
     packets <- parsePPackets [] 
     let packets' = catMaybes packets 
-    return (Pcap gHeader packets')
+    return (mkPcap gHeader packets')
   where 
     parsePPackets xs = do 
         empty <- isEmpty 
