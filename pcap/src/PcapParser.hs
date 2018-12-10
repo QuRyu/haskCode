@@ -6,6 +6,8 @@ module PcapParser (
     , Pcap
     
     , parsePCAP 
+    , parseB6034
+    , parseGHeader
     ) where 
 
 import Data.Int 

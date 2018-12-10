@@ -13,8 +13,8 @@ module PcapData (
 
     , marketDataBuilder
     , pcapBuilder
+    , headerBuilder
     , sortPcap
-
     ) where 
 
 import Data.Int
@@ -68,7 +68,7 @@ bids = reverse .  readTrans (29, 60)
 
                        
 marketDataBuilder :: MarketData -> Builder 
-marketDataBuilder mdata  = word32LE (paccTime mdata) <> space  
+marketDataBuilder mdata  = word32Dec (paccTime mdata) <> space  
                        <> byteString (accTime mdata) <> space 
                        <> byteString (issueCode mdata) <> space 
                        <> mapBuild (bids mdata) 
@@ -103,6 +103,14 @@ mkPGlobalHeader :: Word32 -> -- | magic number
                    Word32 -> -- | network  
                    PGlobalHeader
 mkPGlobalHeader = PGHeader
+
+headerBuilder :: PGlobalHeader -> Builder
+headerBuilder (PGHeader a b c d e f g) = 
+    word32Dec a <> space <> word16Dec b <> space <> 
+    word16Dec c <> space <> int32Dec d <> space <> 
+    word32Dec e <> space <> word32Dec f <> space <> word32Dec g 
+  where (<>) = mappend 
+        space = charUtf8 ' ' 
 
 
 data Pcap = Pcap !PGlobalHeader (V.Vector MarketData)
