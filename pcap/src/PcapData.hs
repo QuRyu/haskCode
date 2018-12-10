@@ -129,9 +129,9 @@ pcapBuilder (Pcap _ mdata) = builders (charUtf8 ' ') mdata
 sortPcap :: Pcap -> Pcap 
 sortPcap (Pcap header mdata) = 
     Pcap header $ runST $ 
-             do v <- (V.thaw mdata) :: ST s (V.MVector s MarketData)
+             do v <- (V.unsafeThaw mdata) :: ST s (V.MVector s MarketData)
                 V.sort v 
-                sorted <- V.freeze v 
+                sorted <- V.unsafeFreeze v 
                 return sorted
                              
          
