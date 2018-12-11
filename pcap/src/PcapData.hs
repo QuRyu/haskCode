@@ -119,7 +119,7 @@ mkPcap :: PGlobalHeader -> [MarketData] -> Pcap
 mkPcap header mdata = Pcap header (V.fromList mdata) 
 
 pcapBuilder :: Pcap -> Builder 
-pcapBuilder (Pcap _ mdata) = builders (charUtf8 ' ') mdata
+pcapBuilder (Pcap _ mdata) = builders mempty mdata
  where builders = V.foldl' (\acc x -> 
                                acc <> charUtf8 '\n' <> marketDataBuilder x)
        (<>) = mappend
