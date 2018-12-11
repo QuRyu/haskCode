@@ -1,12 +1,13 @@
+{-# LANGUAGE BangPatterns #-} 
+
 module PcapParser (
       PGlobalHeader
-    , Transaction
     , MarketData
     , Pcap
     
     , parsePCAP 
-    , getMarketData
-    , accTime 
+    , parseB6034
+    , parseGHeader
     ) where 
 
 import Data.Int 
@@ -19,64 +20,14 @@ import qualified Data.ByteString as BS
 import qualified Data.ByteString.Lazy as BL
 import qualified Data.ByteString.Char8 as Char8
 import Data.Binary.Get 
-import Data.Text (Text)
-import Data.Text.Encoding 
 
-import Time 
-
-data PGlobalHeader = PGHeader { 
-      magic_number  :: Word32 
-    , version_major :: Word16 
-    , version_minor :: Word16 
-    , timezone      :: Int32  -- GMT to local correction 
-    , sigfigs       :: Word32 -- accuracy of timestamps 
-    , snaplen       :: Word32 -- max length of captured packets 
-    , network       :: Word32 -- data link type 
-    } deriving (Show, Eq)
-
-data PPacket = PPacket BS.ByteString MarketData 
-
-data Transaction = Trans { 
-      qty   :: BS.ByteString 
-    , price :: BS.ByteString 
-    } deriving Eq
-
-data MarketData = B6034 {
-      paccTime :: Word32 -- packet accpet time 
-    , issCode :: BS.ByteString -- issue code (ISIN code) 
-    , accTime :: Time  -- accepted time 
-    , bids    :: [Transaction] -- from 1st to 5th
-    , asks    :: [Transaction]
-    } deriving Eq
-
-data Pcap = Pcap PGlobalHeader [MarketData] 
-    deriving Show
-
-instance Show PPacket where 
-    show (PPacket a m) = show a ++ ' ' : show m 
-
-instance Show Transaction where 
-    show (Trans q p) = show q ++ '@' : show p 
-
-instance Show MarketData where 
-    show (B6034 p i t b a) = 
-         show p ++ ' ' : show t ++ ' ' : show i ++ ' ' : go (reverse b) ++ ' ' : go a 
-        where 
-          go [] = ""
-          go (x:xs) = show x ++ ' ' : go xs 
-
-instance Ord MarketData where 
-    compare (B6034 _ _ l _ _) (B6034 _ _ r _ _) = compare l r 
-
-getMarketData :: Pcap -> [MarketData]
-getMarketData (Pcap _ ms) = ms 
-
+import PcapData 
 
 packetLen :: Word32 
 packetLen = 42 
       
 parseGHeader :: Get PGlobalHeader 
-parseGHeader = PGHeader <$> 
+parseGHeader = mkPGlobalHeader <$> 
                getWord32le <*> 
                getWord16le <*> 
                getWord16le <*>
@@ -118,34 +69,16 @@ parseB6034 = parsePPacket (BS.isPrefixOf quote) parseB6034'
       parseB6034' :: Word32 -> Get MarketData 
       parseB6034' pacc = do 
         readB <- bytesRead 
-        issCode <- getByteString 12 
-        skip 12 
-        bids <- go 5  
-        skip 7
-        asks <- go 5  
-        skip 50 
-        accTime <- getTime 
+        content <- getByteString 209 
         skip 1 
-        return (B6034 pacc issCode accTime bids asks)
-        where 
-          getTime = mkTime 
-                 <$> getWord16le
-                 <*> getWord16le 
-                 <*> getWord16le
-                 <*> getWord16le
-          go 0 = return [] 
-          go n = do price <- getByteString 5  
-                    qty <- getByteString 7
-                    remains <- go (n-1)  
-                    return $ (Trans qty price) : remains 
-
+        return (mkMarketData pacc content)
 
 parsePCAP :: Get Pcap
 parsePCAP = do 
     gHeader <- parseGHeader 
     packets <- parsePPackets [] 
     let packets' = catMaybes packets 
-    return (Pcap gHeader packets')
+    return (mkPcap gHeader packets')
   where 
     parsePPackets xs = do 
         empty <- isEmpty 

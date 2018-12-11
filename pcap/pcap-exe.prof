@@ -1,96 +1,94 @@
-	Sun Mar  4 22:21 2018 Time and Allocation Profiling Report  (Final)
+	Sun Oct 14 17:31 2018 Time and Allocation Profiling Report  (Final)
 
-	   pcap-exe +RTS -N -p -RTS /Users/HereWegoR/Documents/haskCode/pcap/test/test.pcap
+	   pcap-exe +RTS -N -p -RTS -r /Users/HereWegoR/Documents/haskCode/pcap/test/test.pcap
 
-	total time  =        0.39 secs   (385 ticks @ 1000 us, 1 processor)
-	total alloc = 816,571,528 bytes  (excludes profiling overheads)
+	total time  =        0.05 secs   (50 ticks @ 1000 us, 1 processor)
+	total alloc = 144,171,488 bytes  (excludes profiling overheads)
 
 COST CENTRE                    MODULE     SRC                                  %time %alloc
 
-main                           Main       app/Main.hs:(12,1)-(29,47)            37.4    3.3
-show                           PcapParser src/PcapParser.hs:59:5-45             20.0   38.6
-show.go                        PcapParser src/PcapParser.hs:(65,11)-(66,43)     10.9   19.6
-show                           PcapParser src/PcapParser.hs:(62,5)-(66,43)       9.6   19.3
-parseB6034.parseB6034'.go      PcapParser src/PcapParser.hs:(136,11)-(140,56)    6.5    9.3
-MAIN                           MAIN       <built-in>                             6.2    0.2
-parsePPacket                   PcapParser src/PcapParser.hs:(92,1)-(109,49)      3.4    2.4
-show                           Time       src/Time.hs:20:5-80                    2.6    3.5
-parseB6034.parseB6034'         PcapParser src/PcapParser.hs:(119,7)-(140,56)     1.6    1.0
-parseB6034.parseB6034'.getTime PcapParser src/PcapParser.hs:(131,11)-(135,32)    0.8    1.2
+parseB6034.parseB6034'.go      PcapParser src/PcapParser.hs:(138,11)-(143,44)   38.0   64.5
+parseB6034.parseB6034'.getTime PcapParser src/PcapParser.hs:(133,11)-(137,32)   16.0    6.3
+parsePPacket                   PcapParser src/PcapParser.hs:(94,1)-(111,49)     12.0   13.7
+MAIN                           MAIN       <built-in>                             8.0    0.0
+readPcap                       Main       app/Main.hs:(35,1)-(37,30)             8.0    4.2
+parseB6034.parseB6034'         PcapParser src/PcapParser.hs:(121,7)-(143,44)     6.0    5.7
+sortMarketData                 Lib        src/Lib.hs:27:1-21                     6.0    1.4
+parsePCAP.packets'             PcapParser src/PcapParser.hs:150:9-36             4.0    0.5
+parsePCAP                      Lib        src/Lib.hs:24:1-33                     2.0    0.7
+parsePCAP.parsePPackets        PcapParser src/PcapParser.hs:(153,5)-(158,40)     0.0    1.1
+parsePPacket.skip'             PcapParser src/PcapParser.hs:110:5-31             0.0    1.8
 
 
                                                                                                                         individual      inherited
 COST CENTRE                               MODULE                 SRC                                 no.     entries  %time %alloc   %time %alloc
 
-MAIN                                      MAIN                   <built-in>                          198          0    6.2    0.2   100.0  100.0
- CAF                                      GHC.Conc.Signal        <entire-module>                     293          0    0.0    0.0     0.0    0.0
- CAF                                      GHC.IO.Encoding        <entire-module>                     275          0    0.0    0.0     0.0    0.0
- CAF                                      GHC.IO.Encoding.Iconv  <entire-module>                     273          0    0.0    0.0     0.0    0.0
- CAF                                      GHC.IO.FD              <entire-module>                     266          0    0.0    0.0     0.0    0.0
- CAF                                      GHC.IO.Handle.FD       <entire-module>                     264          0    0.0    0.0     0.0    0.0
- CAF                                      GHC.IO.Handle.Text     <entire-module>                     262          0    0.0    0.0     0.0    0.0
- CAF                                      System.Posix.Internals <entire-module>                     232          0    0.0    0.0     0.0    0.0
- CAF                                      GHC.Event.Manager      <entire-module>                     217          0    0.0    0.0     0.0    0.0
- CAF                                      GHC.Event.Poll         <entire-module>                     215          0    0.0    0.0     0.0    0.0
- CAF                                      GHC.Event.Thread       <entire-module>                     214          0    0.0    0.0     0.0    0.0
- CAF:ds_raRP                              PcapParser             <no location info>                  359          0    0.0    0.0     0.0    0.0
-  parseB6034                              PcapParser             src/PcapParser.hs:(113,1)-(140,56)  424          0    0.0    0.0     0.0    0.0
-   parsePPacket                           PcapParser             src/PcapParser.hs:(92,1)-(109,49)   425          0    0.0    0.0     0.0    0.0
-    parseB6034.parseB6034'                PcapParser             src/PcapParser.hs:(119,7)-(140,56)  426          0    0.0    0.0     0.0    0.0
-     parseB6034.parseB6034'.go            PcapParser             src/PcapParser.hs:(136,11)-(140,56) 427          1    0.0    0.0     0.0    0.0
- CAF:f_raRw                               PcapParser             <no location info>                  356          0    0.0    0.0     0.0    0.0
-  parseB6034                              PcapParser             src/PcapParser.hs:(113,1)-(140,56)  417          0    0.0    0.0     0.0    0.0
-   parseB6034.quote                       PcapParser             src/PcapParser.hs:116:7-32          418          1    0.0    0.0     0.0    0.0
- CAF:getTime_raRL                         PcapParser             <no location info>                  358          0    0.0    0.0     0.0    0.0
-  parseB6034                              PcapParser             src/PcapParser.hs:(113,1)-(140,56)  429          0    0.0    0.0     0.0    0.0
-   parsePPacket                           PcapParser             src/PcapParser.hs:(92,1)-(109,49)   430          0    0.0    0.0     0.0    0.0
-    parseB6034.parseB6034'                PcapParser             src/PcapParser.hs:(119,7)-(140,56)  431          0    0.0    0.0     0.0    0.0
-     parseB6034.parseB6034'.getTime       PcapParser             src/PcapParser.hs:(131,11)-(135,32) 432          1    0.0    0.0     0.0    0.0
- CAF:main1                                Main                   <no location info>                  394          0    0.0    0.0     0.0    0.0
-  main                                    Main                   app/Main.hs:(12,1)-(29,47)          396          1    0.0    0.0     0.0    0.0
- CAF:main5                                Main                   <no location info>                  392          0    0.0    0.0     0.0    0.0
- CAF:mkTime                               Time                   src/Time.hs:23:1-6                  341          0    0.0    0.0     0.0    0.0
-  mkTime                                  Time                   src/Time.hs:23:1-13                 441          1    0.0    0.0     0.0    0.0
- CAF:parseB6034_raRU                      PcapParser             <no location info>                  360          0    0.0    0.0     0.0    0.0
-  parseB6034                              PcapParser             src/PcapParser.hs:(113,1)-(140,56)  412          1    0.0    0.0     0.0    0.0
-   parsePPacket                           PcapParser             src/PcapParser.hs:(92,1)-(109,49)   413          1    0.0    0.0     0.0    0.0
- CAF:parsePCAP                            Lib                    src/Lib.hs:25:1-9                   363          0    0.0    0.0     0.0    0.0
-  parsePCAP                               Lib                    src/Lib.hs:25:1-33                  405          1    0.0    0.0     0.0    0.0
- CAF:parsePCAP1                           PcapParser             <no location info>                  361          0    0.0    0.0     0.0    0.0
-  parsePCAP                               PcapParser             src/PcapParser.hs:(144,1)-(155,40)  407          1    0.0    0.0     0.0    0.0
- CAF:parsePCAP2                           PcapParser             <no location info>                  355          0    0.0    0.0     0.0    0.0
-  parseGHeader                            PcapParser             src/PcapParser.hs:(79,1)-(86,26)    409          1    0.0    0.0     0.0    0.0
- CAF:skip'_raRx                           PcapParser             <no location info>                  357          0    0.0    0.0     0.0    0.0
-  parseB6034                              PcapParser             src/PcapParser.hs:(113,1)-(140,56)  419          0    0.0    0.0     0.0    0.0
-   parsePPacket                           PcapParser             src/PcapParser.hs:(92,1)-(109,49)   420          0    0.0    0.0     0.0    0.0
-    parsePPacket.skip'                    PcapParser             src/PcapParser.hs:108:5-31          421          1    0.0    0.0     0.0    0.0
- main                                     Main                   app/Main.hs:(12,1)-(29,47)          397          0   37.4    3.3    93.8   99.8
-  show                                    PcapParser             src/PcapParser.hs:(62,5)-(66,43)    440      16004    9.6   19.3    43.1   81.0
-   show.go                                PcapParser             src/PcapParser.hs:(65,11)-(66,43)   444     192048   10.9   19.6    30.9   58.2
-    show                                  PcapParser             src/PcapParser.hs:59:5-45           445     160040   20.0   38.6    20.0   38.6
-   show                                   Time                   src/Time.hs:20:5-80                 443      16004    2.6    3.5     2.6    3.5
-  main.args'                              Main                   app/Main.hs:15:9-41                 399          1    0.0    0.0     0.0    0.0
-   main.act                               Main                   app/Main.hs:(24,5)-(25,19)          400          1    0.0    0.0     0.0    0.0
-  main.mData                              Main                   app/Main.hs:19:21-76                402          1    0.0    0.0     0.0    0.0
-   getMarketData                          PcapParser             src/PcapParser.hs:72:1-30           404          1    0.0    0.0     0.0    0.0
-   main.act                               Main                   app/Main.hs:(24,5)-(25,19)          403          1    0.0    0.0     0.0    0.0
-  main.ordering                           Main                   app/Main.hs:14:9-35                 398          1    0.0    0.0     0.0    0.0
-  readPcap                                Main                   app/Main.hs:(32,1)-(34,30)          401          1    0.3    0.7    13.2   15.5
-   parsePCAP                              Lib                    src/Lib.hs:25:1-33                  406          0    0.5    0.1    13.0   14.7
-    parsePCAP                             PcapParser             src/PcapParser.hs:(144,1)-(155,40)  408          0    0.0    0.0    12.5   14.6
-     parseGHeader                         PcapParser             src/PcapParser.hs:(79,1)-(86,26)    410          0    0.0    0.0    12.5   14.6
-      parsePCAP.parsePPackets             PcapParser             src/PcapParser.hs:(150,5)-(155,40)  411      21274    0.0    0.2    12.5   14.6
-       parsePCAP.packets'                 PcapParser             src/PcapParser.hs:147:9-36          439          1    0.0    0.1     0.0    0.1
-       parseB6034                         PcapParser             src/PcapParser.hs:(113,1)-(140,56)  414          0    0.0    0.0    12.5   14.4
-        parsePPacket                      PcapParser             src/PcapParser.hs:(92,1)-(109,49)   415          0    3.4    2.4    12.5   14.3
-         parseB6034.parseB6034'           PcapParser             src/PcapParser.hs:(119,7)-(140,56)  423      16004    1.6    1.0     9.1   11.7
-          parseB6034.parseB6034'.go       PcapParser             src/PcapParser.hs:(136,11)-(140,56) 428     160040    6.5    8.7     6.5    8.7
-          parseB6034.parseB6034'.getTime  PcapParser             src/PcapParser.hs:(131,11)-(135,32) 433          0    0.8    1.2     1.0    2.0
-           mkTime                         Time                   src/Time.hs:23:1-13                 442          0    0.3    0.1     0.3    0.1
-           parseB6034.parseB6034'.go      PcapParser             src/PcapParser.hs:(136,11)-(140,56) 434          0    0.0    0.7     0.0    0.8
-            parsePPacket.skip'            PcapParser             src/PcapParser.hs:108:5-31          435          0    0.0    0.1     0.0    0.1
-         parsePPacket.skipLen             PcapParser             src/PcapParser.hs:104:33-57         416       5264    0.0    0.0     0.0    0.0
-         parsePPacket.skip'               PcapParser             src/PcapParser.hs:108:5-31          422          0    0.0    0.2     0.0    0.2
-          parseB6034.parseB6034'          PcapParser             src/PcapParser.hs:(119,7)-(140,56)  436          0    0.0    0.0     0.0    0.0
-           parseB6034.parseB6034'.getTime PcapParser             src/PcapParser.hs:(131,11)-(135,32) 437          0    0.0    0.0     0.0    0.0
-            parseB6034.parseB6034'.go     PcapParser             src/PcapParser.hs:(136,11)-(140,56) 438          0    0.0    0.0     0.0    0.0
+MAIN                                      MAIN                   <built-in>                          197          0    8.0    0.0   100.0  100.0
+ CAF                                      GHC.Conc.Signal        <entire-module>                     292          0    0.0    0.0     0.0    0.0
+ CAF                                      GHC.IO.Encoding        <entire-module>                     274          0    0.0    0.0     0.0    0.0
+ CAF                                      GHC.IO.Encoding.Iconv  <entire-module>                     272          0    0.0    0.0     0.0    0.0
+ CAF                                      GHC.IO.FD              <entire-module>                     265          0    0.0    0.0     0.0    0.0
+ CAF                                      GHC.IO.Handle.FD       <entire-module>                     263          0    0.0    0.0     0.0    0.0
+ CAF                                      GHC.IO.Handle.Text     <entire-module>                     261          0    0.0    0.0     0.0    0.0
+ CAF                                      System.Posix.Internals <entire-module>                     231          0    0.0    0.0     0.0    0.0
+ CAF                                      GHC.Event.Poll         <entire-module>                     214          0    0.0    0.0     0.0    0.0
+ CAF                                      GHC.Event.Thread       <entire-module>                     213          0    0.0    0.0     0.0    0.0
+ CAF:ds_rbKE                              PcapParser             <no location info>                  357          0    0.0    0.0     0.0    0.0
+  parseB6034                              PcapParser             src/PcapParser.hs:(115,1)-(143,44)  425          0    0.0    0.0     0.0    0.0
+   parsePPacket                           PcapParser             src/PcapParser.hs:(94,1)-(111,49)   426          0    0.0    0.0     0.0    0.0
+    parseB6034.parseB6034'                PcapParser             src/PcapParser.hs:(121,7)-(143,44)  427          0    0.0    0.0     0.0    0.0
+     parseB6034.parseB6034'.go            PcapParser             src/PcapParser.hs:(138,11)-(143,44) 428          1    0.0    0.0     0.0    0.0
+ CAF:f_rbKl                               PcapParser             <no location info>                  354          0    0.0    0.0     0.0    0.0
+  parseB6034                              PcapParser             src/PcapParser.hs:(115,1)-(143,44)  418          0    0.0    0.0     0.0    0.0
+   parseB6034.quote                       PcapParser             src/PcapParser.hs:118:7-32          419          1    0.0    0.0     0.0    0.0
+ CAF:getTime_rbKA                         PcapParser             <no location info>                  356          0    0.0    0.0     0.0    0.0
+  parseB6034                              PcapParser             src/PcapParser.hs:(115,1)-(143,44)  430          0    0.0    0.0     0.0    0.0
+   parsePPacket                           PcapParser             src/PcapParser.hs:(94,1)-(111,49)   431          0    0.0    0.0     0.0    0.0
+    parseB6034.parseB6034'                PcapParser             src/PcapParser.hs:(121,7)-(143,44)  432          0    0.0    0.0     0.0    0.0
+     parseB6034.parseB6034'.getTime       PcapParser             src/PcapParser.hs:(133,11)-(137,32) 433          1    0.0    0.0     0.0    0.0
+ CAF:main1                                Main                   <no location info>                  392          0    0.0    0.0     0.0    0.0
+  main                                    Main                   app/Main.hs:(14,1)-(32,47)          394          1    0.0    0.0     0.0    0.0
+ CAF:main4                                Main                   <no location info>                  390          0    0.0    0.0     0.0    0.0
+ CAF:parseB6034_rbKJ                      PcapParser             <no location info>                  358          0    0.0    0.0     0.0    0.0
+  parseB6034                              PcapParser             src/PcapParser.hs:(115,1)-(143,44)  413          1    0.0    0.0     0.0    0.0
+   parsePPacket                           PcapParser             src/PcapParser.hs:(94,1)-(111,49)   414          1    0.0    0.0     0.0    0.0
+ CAF:parsePCAP                            Lib                    src/Lib.hs:24:1-9                   361          0    0.0    0.0     0.0    0.0
+  parsePCAP                               Lib                    src/Lib.hs:24:1-33                  406          1    0.0    0.0     0.0    0.0
+ CAF:parsePCAP1                           PcapParser             <no location info>                  359          0    0.0    0.0     0.0    0.0
+  parsePCAP                               PcapParser             src/PcapParser.hs:(147,1)-(158,40)  408          1    0.0    0.0     0.0    0.0
+ CAF:parsePCAP2                           PcapParser             <no location info>                  353          0    0.0    0.0     0.0    0.0
+  parseGHeader                            PcapParser             src/PcapParser.hs:(81,1)-(88,26)    410          1    0.0    0.0     0.0    0.0
+ CAF:skip'_rbKm                           PcapParser             <no location info>                  355          0    0.0    0.0     0.0    0.0
+  parseB6034                              PcapParser             src/PcapParser.hs:(115,1)-(143,44)  420          0    0.0    0.0     0.0    0.0
+   parsePPacket                           PcapParser             src/PcapParser.hs:(94,1)-(111,49)   421          0    0.0    0.0     0.0    0.0
+    parsePPacket.skip'                    PcapParser             src/PcapParser.hs:110:5-31          422          1    0.0    0.0     0.0    0.0
+ CAF:sortMarketData                       Lib                    src/Lib.hs:27:1-14                  362          0    0.0    0.0     0.0    0.0
+  sortMarketData                          Lib                    src/Lib.hs:27:1-21                  403          1    0.0    0.0     0.0    0.0
+ main                                     Main                   app/Main.hs:(14,1)-(32,47)          395          0    0.0    0.0    92.0  100.0
+  main.args'                              Main                   app/Main.hs:17:9-41                 397          1    0.0    0.0     0.0    0.0
+   main.act                               Main                   app/Main.hs:(27,5)-(28,19)          398          1    0.0    0.0     0.0    0.0
+    main.removeR                          Main                   app/Main.hs:(30,5)-(32,47)          399          1    0.0    0.0     0.0    0.0
+  main.mData                              Main                   app/Main.hs:21:21-77                401          1    0.0    0.0     6.0    1.4
+   getMarketData                          PcapParser             src/PcapParser.hs:74:1-30           405          1    0.0    0.0     0.0    0.0
+   main.act                               Main                   app/Main.hs:(27,5)-(28,19)          402          1    0.0    0.0     6.0    1.4
+    sortMarketData                        Lib                    src/Lib.hs:27:1-21                  404          0    6.0    1.4     6.0    1.4
+     compare                              PcapParser             src/PcapParser.hs:71:5-61           441      21672    0.0    0.0     0.0    0.0
+  main.ordering                           Main                   app/Main.hs:16:9-35                 396          1    0.0    0.0     0.0    0.0
+  readPcap                                Main                   app/Main.hs:(35,1)-(37,30)          400          1    8.0    4.2    86.0   98.6
+   parsePCAP                              Lib                    src/Lib.hs:24:1-33                  407          0    2.0    0.7    78.0   94.4
+    parsePCAP                             PcapParser             src/PcapParser.hs:(147,1)-(158,40)  409          0    0.0    0.0    76.0   93.7
+     parseGHeader                         PcapParser             src/PcapParser.hs:(81,1)-(88,26)    411          0    0.0    0.0    76.0   93.7
+      parsePCAP.parsePPackets             PcapParser             src/PcapParser.hs:(153,5)-(158,40)  412      21274    0.0    1.1    76.0   93.7
+       parsePCAP.packets'                 PcapParser             src/PcapParser.hs:150:9-36          440          1    4.0    0.5     4.0    0.5
+       parseB6034                         PcapParser             src/PcapParser.hs:(115,1)-(143,44)  415          0    0.0    0.2    72.0   92.1
+        parsePPacket                      PcapParser             src/PcapParser.hs:(94,1)-(111,49)   416          0   12.0   13.7    72.0   91.9
+         parseB6034.parseB6034'           PcapParser             src/PcapParser.hs:(121,7)-(143,44)  424      16004    6.0    5.7    60.0   76.9
+          parseB6034.parseB6034'.go       PcapParser             src/PcapParser.hs:(138,11)-(143,44) 429     160040   38.0   60.7    38.0   60.7
+          parseB6034.parseB6034'.getTime  PcapParser             src/PcapParser.hs:(133,11)-(137,32) 434          0   16.0    6.3    16.0   10.5
+           parseB6034.parseB6034'.go      PcapParser             src/PcapParser.hs:(138,11)-(143,44) 435          0    0.0    3.7     0.0    4.3
+            parsePPacket.skip'            PcapParser             src/PcapParser.hs:110:5-31          436          0    0.0    0.5     0.0    0.5
+         parsePPacket.skipLen             PcapParser             src/PcapParser.hs:106:33-57         417       5264    0.0    0.0     0.0    0.0
+         parsePPacket.skip'               PcapParser             src/PcapParser.hs:110:5-31          423          0    0.0    1.2     0.0    1.2
+          parseB6034.parseB6034'          PcapParser             src/PcapParser.hs:(121,7)-(143,44)  437          0    0.0    0.0     0.0    0.0
+           parseB6034.parseB6034'.getTime PcapParser             src/PcapParser.hs:(133,11)-(137,32) 438          0    0.0    0.0     0.0    0.0
+            parseB6034.parseB6034'.go     PcapParser             src/PcapParser.hs:(138,11)-(143,44) 439          0    0.0    0.0     0.0    0.0
