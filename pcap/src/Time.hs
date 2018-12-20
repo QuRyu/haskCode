@@ -17,7 +17,7 @@ data Time = Time {
   } deriving (Eq, Ord)
 
 instance Show Time where 
-    show (Time h m s u) = show h ++ ':' : show m ++ ':' : show s ++ ':' : show u 
+    show (Time h m s u) = show h ++ show m ++ show s ++ show u 
 
 mkTime :: Word16 -> Word16 -> Word16 -> Word16 -> Time 
 mkTime = Time 
