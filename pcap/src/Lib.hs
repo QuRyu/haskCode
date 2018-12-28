@@ -4,10 +4,14 @@ module Lib
     , Pcap 
 
     , parsePCAP
+    , parseB6034
+    , parseGHeader
+
     , sortPcap
     , pcapBuilder
-    , parseGHeader
     , headerBuilder
+    , marketDataBuilder
+    , getMarketData 
     ) where
 
 

@@ -15,9 +15,11 @@ module PcapData (
     , pcapBuilder
     , headerBuilder
     , sortPcap
+    , getMarketData 
     ) where 
 
 import Data.Int
+import System.IO
 import Data.Word 
 import Data.Char (ord) 
 import Control.Monad.ST 
@@ -33,6 +35,9 @@ data MarketData = B6034 {
     , quotes   :: {-# UNPACK #-} !ByteString 
     } deriving Eq
 
+instance Show MarketData where 
+    show (B6034 paccTime quotes) = show paccTime ++ '\n' : show quotes
+
 mkMarketData :: Word32 -> ByteString -> MarketData 
 mkMarketData = B6034
 
@@ -43,11 +48,11 @@ split i e bs | e < 0     = BS.empty
              | otherwise = BS.take e $ BS.drop i bs 
 
 issueCode :: MarketData -> ByteString 
-issueCode (quotes -> bs) = split 5 12 bs    
+issueCode (quotes -> bs) = split 0 12 bs    
 
 -- quote accept time, in format HHMMSSuu 
 accTime :: MarketData -> ByteString  
-accTime (quotes -> bs) = split 206 8 bs 
+accTime (quotes -> bs) = split 201 8 bs 
 
 type Qty = ByteString 
 type Price = ByteString 
@@ -63,8 +68,8 @@ readTrans (i, e) (quotes -> bs) = go 5 chunks []
                     in go (n-1) chunk'' ((qty, pri) : xs)
 
 asks, bids :: MarketData -> [(Qty, Price)] 
-asks = readTrans (96, 60)  
-bids = reverse .  readTrans (29, 60)  
+asks = readTrans (91, 60)  
+bids = reverse .  readTrans (24, 60)  
 
                        
 marketDataBuilder :: MarketData -> Builder 
@@ -112,19 +117,18 @@ headerBuilder (PGHeader a b c d e f g) =
   where (<>) = mappend 
         space = charUtf8 ' ' 
 
-
 data Pcap = Pcap !PGlobalHeader (V.Vector MarketData)
 
 mkPcap :: PGlobalHeader -> [MarketData] -> Pcap
 mkPcap header mdata = Pcap header (V.fromList mdata) 
 
-pcapBuilder :: Pcap -> Builder 
-pcapBuilder (Pcap _ mdata) = builders mempty mdata
- where builders = V.foldl' (\acc x -> 
-                               acc <> charUtf8 '\n' <> marketDataBuilder x)
-       (<>) = mappend
+getMarketData :: Pcap -> V.Vector MarketData 
+getMarketData (Pcap _ v) = v 
 
-                                        
+pcapBuilder :: Pcap -> Builder 
+pcapBuilder (Pcap _ mdata) = V.foldr step mempty mdata
+ where step x acc = acc <> charUtf8 '\n' <> marketDataBuilder x
+       (<>) = mappend
 
 sortPcap :: Pcap -> Pcap 
 sortPcap (Pcap header mdata) = 
