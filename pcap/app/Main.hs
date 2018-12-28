@@ -10,6 +10,7 @@ import Control.Exception
 import qualified Data.ByteString.Lazy as BL
 import Data.ByteString.Builder
 import Data.Binary.Get  
+import qualified Data.Vector as V
 
 import Lib
 
@@ -21,13 +22,9 @@ main = do
     if null args' || length args' > 1 
         then putStrLn "Expecting pcap file path!"
         else do pcap <- readPcap args' 
-                let pcap' = act ordering sortPcap pcap
+                let !pcap' = act ordering sortPcap pcap
                 hPutBuilder stdout (pcapBuilder pcap')
-                return ()
-        --else do header <- Main.read args'
-                --hPutBuilder stdout (string8 "hello\n" `mappend`  
-                                        --headerBuilder header)
-                --return ()
+                return () 
   where 
     act True f = f  
     act _    _ = id 
@@ -42,11 +39,9 @@ readPcap (path:_) = do
     content <- BL.readFile path 
     return $ parsePCAP content   
                 
-read :: [String] -> IO PGlobalHeader 
-read (path:_) = do 
-    content <- BL.readFile path 
-    header <- evaluate $ runGet parseGHeader content 
-    return header 
+
+
+
     
 
 
