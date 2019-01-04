@@ -28,6 +28,12 @@ dependencies:
 - text
 - vector 
 - vector-algorithms 
+- conduit 
+- exceptions 
+- primitive
+- directory 
+- resourcet
+- cereal 
 
 library:
   source-dirs: src
