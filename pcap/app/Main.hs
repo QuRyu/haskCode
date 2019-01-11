@@ -1,16 +1,11 @@
-{-# LANGUAGE BangPatterns #-} 
-
 module Main (main) where
 
 import System.IO 
 import System.Environment 
-import Control.Monad 
-import Control.Exception 
 
-import qualified Data.ByteString.Lazy as BL
 import Data.ByteString.Builder
-import Data.Binary.Get  
 import qualified Data.Vector as V
+import System.Directory 
 
 import Lib
 
@@ -21,7 +16,7 @@ main = do
     let args' = act ordering removeR args 
     if null args' || length args' > 1 
         then putStrLn "Expecting pcap file path!"
-        else do pcap <- readPcap args' 
+        else do pcap <- readPcap args'  
                 let !pcap' = act ordering sortPcap pcap
                 hPutBuilder stdout (pcapBuilder pcap')
                 return () 
@@ -31,18 +26,16 @@ main = do
 
     removeR [] = [] 
     removeR (x:xs) | x == "-r" = xs
-                    | otherwise = x : removeR xs 
+                   | otherwise = x : removeR xs 
 
 
-readPcap :: [String] -> IO Pcap 
+--readPcap :: [String] -> IO Pcap 
 readPcap (path:_) = do
-    content <- BL.readFile path 
-    return $ parsePCAP content   
+    (header, mdata) <- pipeline path 
+    return $ mkPcapVec header (V.mapMaybe id mdata) 
                 
+pcapFilePath :: IO FilePath 
+pcapFilePath = fmap (flip (++) "/test/test.pcap") getCurrentDirectory 
 
 
 
-    
-
-
-     
