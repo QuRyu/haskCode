@@ -23,11 +23,16 @@ description:         Please see the README on Github at <https://github.com/gith
 
 dependencies:
 - base >= 4.7 && < 5
-- binary
 - bytestring
 - text
 - vector 
 - vector-algorithms 
+- conduit 
+- exceptions 
+- primitive
+- directory 
+- resourcet
+- cereal 
 
 library:
   source-dirs: src

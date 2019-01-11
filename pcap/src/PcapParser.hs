@@ -5,21 +5,18 @@ module PcapParser (
     , MarketData
     , Pcap
     
-    , parsePCAP 
+    --, parsePCAP 
     , parseB6034
     , parseGHeader
     ) where 
 
 import Data.Int 
 import Data.Word 
-import Control.Monad
 import Data.Maybe 
-import Control.Monad.IO.Class
 
 import qualified Data.ByteString as BS 
-import qualified Data.ByteString.Lazy as BL
 import qualified Data.ByteString.Char8 as Char8
-import Data.Binary.Get 
+import Data.Serialize.Get 
 
 import PcapData 
 

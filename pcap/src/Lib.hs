@@ -1,9 +1,13 @@
+{-# LANGUAGE FlexibleContexts #-}
+
 module Lib
     ( PGlobalHeader
     , MarketData 
     , Pcap 
 
-    , parsePCAP
+    , mkPcap
+    , mkPcapVec
+
     , parseB6034
     , parseGHeader
 
@@ -12,21 +16,25 @@ module Lib
     , headerBuilder
     , marketDataBuilder
     , getMarketData 
+
+    , pipeline
     ) where
 
 
-import Data.List 
-
-import Data.Binary.Get 
-import Data.Text.Encoding
-import qualified Data.Text as Text
-import qualified Data.ByteString.Lazy as BL
+import Data.Conduit
+import qualified Data.Conduit.Combinators as C
+import qualified Data.Vector.Generic as VG
+import Control.Monad.Trans.Resource
 
 import PcapData
-import PcapParser hiding (parsePCAP) 
-import qualified PcapParser as PCAP (parsePCAP)
+import PcapParser
+import ConduitParse 
 
-parsePCAP :: BL.ByteString -> Pcap  
-parsePCAP = runGet PCAP.parsePCAP 
-
-
+-- | Stream  a file given the file path and parse it 
+pipeline :: (VG.Vector v (Maybe MarketData)) => 
+            FilePath 
+         -> IO (PGlobalHeader, v (Maybe MarketData)) 
+pipeline fp = do 
+    runResourceT . runConduit $ (C.sourceFile fp) .| parser
+    where 
+      parser = fuseGet parseGHeader parseB6034
