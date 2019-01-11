@@ -9,6 +9,7 @@ module PcapData (
     , mkMarketData
     , mkPGlobalHeader
     , mkPcap
+    , mkPcapVec
 
 
     , marketDataBuilder
@@ -26,6 +27,7 @@ import Control.Monad.ST
 
 import Data.ByteString (ByteString)
 import qualified Data.ByteString as BS 
+import qualified Data.ByteString.Lazy.Char8 as BL8
 import Data.ByteString.Builder 
 import qualified Data.Vector as V 
 import qualified Data.Vector.Algorithms.Intro as V
@@ -36,7 +38,7 @@ data MarketData = B6034 {
     } deriving Eq
 
 instance Show MarketData where 
-    show (B6034 paccTime quotes) = show paccTime ++ '\n' : show quotes
+    show m = BL8.unpack . toLazyByteString $ marketDataBuilder m 
 
 mkMarketData :: Word32 -> ByteString -> MarketData 
 mkMarketData = B6034
@@ -121,6 +123,9 @@ data Pcap = Pcap !PGlobalHeader (V.Vector MarketData)
 
 mkPcap :: PGlobalHeader -> [MarketData] -> Pcap
 mkPcap header mdata = Pcap header (V.fromList mdata) 
+
+mkPcapVec :: PGlobalHeader -> V.Vector MarketData -> Pcap 
+mkPcapVec = Pcap 
 
 getMarketData :: Pcap -> V.Vector MarketData 
 getMarketData (Pcap _ v) = v 
